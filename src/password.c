@@ -1,6 +1,6 @@
 /*
  * AES Crypt for Linux
- * Copyright (C) 2007, 2008, 2009, 2013
+ * Copyright (C) 2007-2016
  *
  * Contributors:
  *     Glenn Washburn <crass@berlios.de>
@@ -18,16 +18,19 @@
  *
  */
 
+#define _POSIX_C_SOURCE 200112L
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <unistd.h> // getopt
-#include <stdlib.h> // malloc
-#include <iconv.h> // iconv stuff
+#include <unistd.h>   // getopt
+#include <stdlib.h>   // malloc
+#include <locale.h>   // setlocale
+#include <iconv.h>    // iconv
 #include <langinfo.h> // nl_langinfo
-#include <errno.h> // errno
-#include <termios.h> // tcgetattr,tcsetattr
+#include <errno.h>    // errno
+#include <termios.h>  // tcgetattr,tcsetattr
 
 #include "password.h"
 
@@ -147,9 +150,12 @@ int read_password(unsigned char* buffer, encryptmode_t mode)
         while (((c = fgetc(ftty)) != '\n') && (c != EOF))
         {
             // fill buffer till MAX_PASSWD_LEN
-            if (chars_read <= MAX_PASSWD_LEN)
-                p[chars_read] = (char) c;
-            chars_read++;
+            if (chars_read <= MAX_PASSWD_LEN+1)
+            {
+                if (chars_read <= MAX_PASSWD_LEN)
+                    p[chars_read] = (char) c;
+                chars_read++;
+            }
         }
 
         if (chars_read <= MAX_PASSWD_LEN)
@@ -243,6 +249,9 @@ int passwd_to_utf16(unsigned char *in_passwd,
     ic_outbytesleft = max_length;
     ic_outbuf = out_passwd;
 
+    /* Set the locale based on the current environment */
+    setlocale(LC_CTYPE,"");
+
     if ((condesc = iconv_open("UTF-16LE", nl_langinfo(CODESET))) ==
         (iconv_t)(-1))
     {
@@ -251,10 +260,10 @@ int passwd_to_utf16(unsigned char *in_passwd,
     }
 
     if (iconv(condesc,
-              (char **) &ic_inbuf,
+              (char ** const) &ic_inbuf,
               &ic_inbytesleft,
-              (char **) &ic_outbuf,
-              &ic_outbytesleft) == -1)
+              (char ** const) &ic_outbuf,
+              &ic_outbytesleft) == (size_t) -1)
     {
         switch (errno)
         {
@@ -264,9 +273,13 @@ int passwd_to_utf16(unsigned char *in_passwd,
                 return -1;
                 break;
             default:
-                //~ printf("EILSEQ(%d), EINVAL(%d), %d\n", EILSEQ, EINVAL, errno);
-                fprintf(stderr,
-                        "Error: Invalid or incomplete multibyte sequence\n");
+                /*
+                printf("\nEILSEQ(%d), EINVAL(%d), %d\n",
+                       EILSEQ,
+                       EINVAL,
+                       errno);
+                */
+                perror("Password conversion error");
                 iconv_close(condesc);
                 return -1;
         }

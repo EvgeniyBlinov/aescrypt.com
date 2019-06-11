@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef __AESCRYPT_H__
-#define __AESCRYPT_H__
+#ifndef AESCRYPT_H
+#define AESCRYPT_H
 
 #include "aes.h"
 #include "sha256.h"
@@ -28,4 +28,4 @@ typedef struct {
 
 typedef unsigned char sha256_t[32];
 
-#endif // __AESCRYPT_H__
+#endif // AESCRYPT_H

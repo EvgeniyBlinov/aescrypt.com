@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef __AESCRYPT_PASSWORD_H__
-#define __AESCRYPT_PASSWORD_H__
+#ifndef AESCRYPT_PASSWORD_H
+#define AESCRYPT_PASSWORD_H
 
 #define MAX_PASSWD_LEN  1024
 #define MAX_PASSWD_BUF  2050 /* MAX_PASSWD_LEN * 2 + 2 -- UTF-16 */
@@ -47,4 +47,4 @@ int read_password(unsigned char* buffer,
                   encryptmode_t mode);
 
 
-#endif // __AESCRYPT_PASSWORD_H__
+#endif // AESCRYPT_PASSWORD_H

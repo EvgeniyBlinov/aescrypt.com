@@ -1,7 +1,7 @@
 /*
  * version.h
  *
- * Copyright (C) 2007, 2008, 2009, 2012, 2013
+ * Copyright (C) 2007-2017
  *
  * This software is licensed as "freeware."  Permission to distribute
  * this software in source and binary forms is hereby granted without a
@@ -14,11 +14,11 @@
  *
  */
 
-#ifndef __AESCRYPT_VERSION_H__
-#define __AESCRYPT_VERSION_H__
+#ifndef AESCRYPT_VERSION_H
+#define AESCRYPT_VERSION_H
 
 #define PROG_NAME       "aescrypt"
-#define PROG_VERSION    "3.0.9"
-#define PROG_DATE       "March 9, 2013"
+#define PROG_VERSION    "3.14"
+#define PROG_DATE       "September 20, 2018"
 
-#endif // __AESCRYPT_VERSION_H__
+#endif // AESCRYPT_VERSION_H

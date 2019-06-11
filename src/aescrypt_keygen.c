@@ -1,6 +1,6 @@
 /*
  *  AES Crypt Key File Generator
- *  Copyright (C) 2007, 2008, 2009, 2013
+ *  Copyright (C) 2007-2016
  *  Paul E. Jones <paulej@packetizer.com>
  *
  * This software is licensed as "freeware."  Permission to distribute
@@ -22,13 +22,14 @@
  *
  */
 
+#define _POSIX_C_SOURCE 200112L
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h> // getopt
-#include <iconv.h> // iconv stuff
-#include <langinfo.h> // nl_langinfo
-#include <errno.h> // errno
+#include <strings.h>
+#include <unistd.h>   /* getopt */
+#include <errno.h>    /* errno */
 
 #include "password.h"
 #include "version.h"
@@ -42,7 +43,7 @@
  * the password once converted to UTF-16LE.
  *
  * The logic for this function was borrowed from pwgen.  We utilize
- * only 62 characters, but what is more important is the password length.
+ * only 64 characters, but what is more important is the password length.
  * More details can be found at http://www.packetizer.com/security/pwgen/.
  * You will find a complete explanation of the strength of various
  * password lengths.
@@ -55,7 +56,7 @@ int generate_password(int length, unsigned char *password)
         'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
         's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F',
         'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-        'U', 'V', 'W', 'X', 'Y', 'Z'
+        'U', 'V', 'W', 'X', 'Y', 'Z', '%', '$'
     };
 
     FILE *randfp;
@@ -89,7 +90,7 @@ int generate_password(int length, unsigned char *password)
     /* Now ensure each octet is uses the defined character set */
     for(i = 0, p = pwtemp; i < length; i++, p++)
     {
-        *p = pwchars[((int)(*p)) % 62];
+        *p = pwchars[((int)(*p)) % 64];
     }
 
     /* Convert the password to UTF-16LE */
@@ -110,7 +111,7 @@ void usage(const char *progname)
 {
     const char* progname_real; //contains the real name of the program (without path)
 
-    progname_real = rindex(progname, '/');
+    progname_real = strrchr(progname, '/');
     if (progname_real == NULL) //no path in progname: use progname
     {
         progname_real = progname;
@@ -132,7 +133,7 @@ void version(const char *progname)
 {
     const char* progname_real; //contains the real name of the program (without path)
 
-    progname_real = rindex(progname, '/');
+    progname_real = strrchr(progname, '/');
     if (progname_real == NULL) //no path in progname: use progname
     {
         progname_real = progname;
@@ -159,9 +160,14 @@ void cleanup(const char *outfile)
     }
 }
 
+/*
+ * main
+ *
+ */
 int main(int argc, char *argv[])
 {
-    int rc=0, passlen=0;
+    int option;
+    int passlen=0;
     FILE *outfp = NULL;
     char outfile[1024];
     unsigned char pass_input[MAX_PASSWD_BUF],
@@ -170,9 +176,9 @@ int main(int argc, char *argv[])
     unsigned char bom[2];
     int password_acquired = 0;
 
-    while ((rc = getopt(argc, argv, "vhg:p:o:")) != -1)
+    while ((option = getopt(argc, argv, "vhg:p:o:")) != -1)
     {
-        switch (rc)
+        switch (option)
         {
             case 'h':
                 usage(argv[0]);
@@ -217,7 +223,8 @@ int main(int argc, char *argv[])
                 password_acquired = 1;
                 break;
             default:
-                fprintf(stderr, "Error: Unknown option '%c'\n", rc);
+                fprintf(stderr, "Error: Unknown option '%c'\n", option);
+                return -1;
         }
     }
     
@@ -301,7 +308,7 @@ int main(int argc, char *argv[])
         return  -1;
     }
     
-    if (fwrite(pass, 1, passlen, outfp) != passlen)
+    if (fwrite(pass, 1, passlen, outfp) != (size_t) passlen)
     {
         fprintf(stderr, "Error: Could not write password file.\n");
         if (strcmp("-",outfile))
@@ -321,5 +328,5 @@ int main(int argc, char *argv[])
     // For security reasons, erase the password
     memset(pass, 0, MAX_PASSWD_BUF);
 
-    return rc;
+    return 0;
 }

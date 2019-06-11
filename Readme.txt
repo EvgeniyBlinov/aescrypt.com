@@ -10,7 +10,7 @@ Contents
 
 1. License
 
-For all files accept aes.c, aes.h, sha256.h, and sha256.c, the following
+For all files except aes.c, aes.h, sha256.h, and sha256.c, the following
 license applies:
 
 This software is licensed as "freeware."  Permission to distribute
