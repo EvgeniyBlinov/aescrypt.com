@@ -1,0 +1,8 @@
+src/aes.o
+src/aescrypt
+src/aescrypt.o
+src/aescrypt_keygen
+src/aescrypt_keygen.o
+src/keyfile.o
+src/password.o
+src/sha256.o
